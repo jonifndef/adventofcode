@@ -1,5 +1,5 @@
-CC := g++
+CC := g++ -std=c++20
 CFLAGS := -g -Wall -Wpedantic -Werror
 
-app: main.cpp
+aoc: main.cpp
 	$(CC) $(CFLAGS) -o $@ $^
