@@ -90,6 +90,29 @@ int getPartOneAnswer_1(std::vector<int>& inputNumbers)
     return numIncreases;
 }
 
+int getPartTwoAnswer_1(const std::vector<int>& inputNumbers)
+{
+    int numIncreases = 0;
+
+    for (int i = 0; i < (int)inputNumbers.size() - 3; i++)
+    {
+        const int a = inputNumbers[i];
+        const int b = inputNumbers[i + 1];
+        const int c = inputNumbers[i + 2];
+        const int d = inputNumbers[i + 3];
+
+        const int first  = (a + b + c);
+        const int second = (b + c + d);
+
+        if (second > first)
+        {
+            numIncreases++;
+        }
+    }
+
+    return numIncreases;
+}
+
 int main(int argc, char* argv[])
 {
     auto arguments = parseArgs(argc, argv);
@@ -100,9 +123,10 @@ int main(int argc, char* argv[])
 
     std::vector<int> inputNumbers = getInputs(arguments);
 
-    const int answer = getPartOneAnswer_1(inputNumbers);
+    //const int answer = getPartOneAnswer_1(inputNumbers);
+    const int answer = getPartTwoAnswer_1(inputNumbers);
 
-    std::cout << "Answer: " << answer << std::endl;
+    std::cout << "Answer part 1: " << answer << std::endl;
 
     return 0;
 }
