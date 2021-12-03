@@ -57,7 +57,22 @@ std::unordered_map<std::string, std::string> parseArgs(int argc, char* argv[])
 
 std::vector<std::string> splitString(const std::string& inputString, const char* deliminator)
 {
-    
+    std::vector<std::string> subStrings; 
+
+    size_t pos = 0;
+    size_t prevPos = 0;
+
+    while ((pos = inputString.find(deliminator, pos)) != std::string::npos)
+    {
+        const std::string subString = inputString.substr(prevPos, pos - prevPos);
+        subStrings.push_back(subString);
+
+        prevPos = ++pos;
+    }
+    const std::string subString = inputString.substr(prevPos, pos - prevPos);
+    subStrings.push_back(subString);
+
+    return subStrings;
 }
 
 std::vector<std::pair<std::string, int>> getInput(std::unordered_map<std::string, std::string> arguments)
@@ -70,23 +85,72 @@ std::vector<std::pair<std::string, int>> getInput(std::unordered_map<std::string
     std::string line;
     while (getline(inputFile, line))
     {
-        std::string direction = line.
-        auto entry = std::make_pair<std::string, int>();
-        inputNumbers.push_back(std::stoi(line));
+        std::string direction = splitString(line, " ")[0];
+        int amount = std::stoi(splitString(line, " ")[1]);
+
+        auto entry = std::make_pair(direction, amount);
+        input.push_back(entry);
     }
     inputFile.close();
 
     return input;
 }
 
-int getPartOneAnswer_1(std::vector<int>& inputNumbers)
+int getPartOneAnswer_1(const std::vector<std::pair<std::string, int>>& input)
 {
+    int horizontalPos = 0;
+    int depth= 0;
 
+    for (const auto& entry : input)
+    {
+        if (entry.first == "forward")
+        {
+            horizontalPos += entry.second;
+        }
+        else if (entry.first == "up")
+        {
+            depth -= entry.second;
+        }
+        else if (entry.first == "down")
+        {
+            depth += entry.second;
+        }
+    }
+
+    std::cout << "horizontalPos: " << horizontalPos << std::endl;
+    std::cout << "depth: " << depth << std::endl;
+
+    return horizontalPos * depth;
 }
 
-int getPartTwoAnswer_1(const std::vector<int>& inputNumbers)
+int getPartTwoAnswer_1(const std::vector<std::pair<std::string, int>>& input)
 {
+    int horizontalPos = 0;
+    int depth = 0;
+    int aim = 0;
 
+    for (const auto& entry : input)
+    {
+        if (entry.first == "forward")
+        {
+            horizontalPos += entry.second;
+            depth += aim * entry.second;
+        }
+        else if (entry.first == "up")
+        {
+            aim -= entry.second;
+        }
+        else if (entry.first == "down")
+        {
+            aim += entry.second;
+        }
+    }
+
+    std::cout << "horizontalPos: " << horizontalPos << std::endl;
+    std::cout << "depth: " << depth << std::endl;
+    std::cout << "aim: " << aim << std::endl;
+
+    return horizontalPos * depth;
 }
 
 int main(int argc, char* argv[])
@@ -97,9 +161,9 @@ int main(int argc, char* argv[])
         return 1;
     }
 
-    std::vector<int> input = getInput(arguments);
+    auto input = getInput(arguments);
 
-    //const int answer = getPartOneAnswer_1(inputNumbers);
+    //const int answer = getPartOneAnswer_1(input);
     const int answer = getPartTwoAnswer_1(input);
 
     std::cout << "Answer part 1: " << answer << std::endl;
