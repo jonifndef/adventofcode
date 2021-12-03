@@ -120,7 +120,7 @@ void getPartOneAnswer_1(std::vector<int>& inputNumbers,
     }
 }
 
-void loopFunc(std::vector<int> inputNumbers,
+void partOneNestedForLoop(std::vector<int> inputNumbers,
               const int targetValue,
               int &lowerValue,
               int &upperValue)
@@ -147,40 +147,70 @@ void getPartOneAnswer_2(std::vector<int>& inputNumbers,
     int lowerValue = 0;
     int upperValue = 0;
 
-    loopFunc(inputNumbers, targetValue, lowerValue, upperValue);
+    partOneNestedForLoop(inputNumbers, targetValue, lowerValue, upperValue);
 
     std::cout << "lowerValue: " << lowerValue << std::endl;
     std::cout << "upperValue: " << upperValue << std::endl;
 }
 
-void loopFunc_2(std::vector<int> inputNumbers,
-                const int targetValue,
-                int &firstIndex,
-                int &secondIndex,
-                int &thirdIndex)
+void partTwoNestedForLoop(const std::vector<int>& inputNumbers,
+                          const int targetValue,
+                          int &firstIndex,
+                          int &secondIndex,
+                          int &thirdIndex)
 {
-    for (; firstIndex < secondIndex; firstIndex++)
-    {
-        secondIndex = firstIndex + 1;
-        for (; secondIndex < thirdIndex; secondIndex++)
-        {
-            std::cout << "firstIndex: " << firstIndex << std::endl;
-            std::cout << "secondIndex: " << secondIndex << std::endl;
-            std::cout << "thirdIndex: " << thirdIndex << std::endl;
+    const int len = inputNumbers.size();
 
-            if (inputNumbers[firstIndex] +
-                inputNumbers[secondIndex] +
-                inputNumbers[thirdIndex] == targetValue)
+    for (; firstIndex < len - 2; firstIndex++)
+    {
+        for (secondIndex = firstIndex + 1; secondIndex < len - 1; secondIndex++)
+        {
+            for (thirdIndex = secondIndex + 1; thirdIndex < len; thirdIndex++)
             {
-                return;
+                if (inputNumbers[firstIndex] +
+                    inputNumbers[secondIndex] +
+                    inputNumbers[thirdIndex] == targetValue)
+                {
+                    return;
+                }
             }
         }
     }
 }
 
-// A bit more optimized than just three nested for-loops
-void solvePartTwo(std::vector<int> inputNumbers,
+bool partTwoOptimized(const std::vector<int>& inputNumbers,
+                      const std::unordered_map<int, int>& inputNumberIndicies,
+                      const int targetValue,
+                      int &firstIndex,
+                      int &secondIndex,
+                      int &thirdIndex)
+{
+    for (int i = 0; i < (int)inputNumbers.size() - 1; i++)
+    {
+        for (int j = i + 1; j < (int)inputNumbers.size(); j++)
+        {
+            const int thirdValue = targetValue - (inputNumbers[i] + inputNumbers[j]);
+
+            if (inputNumberIndicies.count(thirdValue))
+            {
+                thirdIndex = inputNumberIndicies.at(thirdValue);
+
+                if (!(i == thirdIndex && j == thirdIndex))
+                {
+                    firstIndex = i;
+                    secondIndex = j;
+
+                    return true;
+                }
+            }
+        }
+    }
+    return false;
+}
+
+void solvePartTwo(const std::vector<int>& inputNumbers,
                   const int targetValue,
+                  const std::unordered_map<int, int> inputNumberIndicies,
                   int &firstValue,
                   int &secondValue,
                   int &thirdValue)
@@ -189,23 +219,13 @@ void solvePartTwo(std::vector<int> inputNumbers,
     int secondIndex = 1;
     int thirdIndex  = 2;
 
-    firstValue  = inputNumbers[firstIndex];
-    secondValue = inputNumbers[secondIndex];
-    thirdValue  = inputNumbers[thirdIndex];
-
-    while ((firstValue + secondValue + thirdValue < targetValue) &&
-           (thirdIndex < (int)inputNumbers.size()))
-    {
-        thirdIndex++;
-
-        thirdValue  = inputNumbers[thirdIndex];
-    }
-
-    loopFunc_2(inputNumbers, targetValue, firstIndex, secondIndex, thirdIndex);
-
-    std::cout << "- firstIndex: " << firstIndex << std::endl;
-    std::cout << "- secondIndex: " << secondIndex << std::endl;
-    std::cout << "- thirdIndex: " << thirdIndex << std::endl;
+    //partTwoNestedForLoop(inputNumbers, targetValue, firstIndex, secondIndex, thirdIndex);
+    partTwoOptimized(inputNumbers,
+                     inputNumberIndicies,
+                     targetValue,
+                     firstIndex,
+                     secondIndex,
+                     thirdIndex);
 
     firstValue  = inputNumbers[firstIndex];
     secondValue = inputNumbers[secondIndex];
@@ -215,7 +235,12 @@ void solvePartTwo(std::vector<int> inputNumbers,
 void getPartTwoAnswer_1(std::vector<int>& inputNumbers,
                         int targetValue)
 {
-    std::sort(inputNumbers.begin(), inputNumbers.end());
+    std::unordered_map<int, int> inputNumberIndicies;
+
+    for (int i = 0; i < (int)inputNumbers.size(); i++)
+    {
+        inputNumberIndicies.insert({inputNumbers[i],i});
+    }
 
     //for (const int num : inputNumbers)
     //{
@@ -226,7 +251,12 @@ void getPartTwoAnswer_1(std::vector<int>& inputNumbers,
     int secondValue = 0;
     int thirdValue  = 0;
 
-    solvePartTwo(inputNumbers, targetValue, firstValue, secondValue, thirdValue);
+    solvePartTwo(inputNumbers,
+                 targetValue,
+                 inputNumberIndicies,
+                 firstValue,
+                 secondValue,
+                 thirdValue);
 
     std::cout << "firstValue: "  << firstValue  << std::endl;
     std::cout << "secondValue: " << secondValue << std::endl;
@@ -244,6 +274,7 @@ int main(int argc, char* argv[])
     std::vector<int> inputNumbers = getInputs(arguments);
 
     int targetValue = 2020;
+
 
     //getPartOneAnswer_1(inputNumbers, targetValue);
     //getPartOneAnswer_2(inputNumbers, targetValue);
