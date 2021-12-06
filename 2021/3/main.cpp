@@ -174,9 +174,79 @@ int getPartOneAnswer_1(const std::vector<std::string>& input)
     return gammaRateDec * epsilonRateDec;
 }
 
+int findMostCommonBit(const std::vector<std::string>& input, const int bitPosition)
+{
+    int mostCommonBit = 0;
+
+    for (const auto& bitArr : input)
+    {
+        if (bitArr[bitPosition] == '1')
+        {
+            mostCommonBit++;
+        }
+        else
+        {
+            mostCommonBit--;
+        }
+    }
+
+    if (mostCommonBit > 0)
+    {
+        return 1;
+    }
+    else if (mostCommonBit < 0)
+    {
+        return 0;
+    }
+    else
+    {
+        return 1;
+    }
+}
+
+bool foundRating(std::vector<std::string> input, int& bitPosition)
+{
+    if (input.size() == 1)
+    {
+        return true;
+    }
+    else
+    {
+        int mostCommonBit = findMostCommonBit(input, bitPosition);
+        // bump bitPosition
+        return foundRating(input, bitPosition);
+    }
+
+    return false;
+}
+
+int getOxygenGeneratorRating(const std::vector<std::string>& input)
+{
+    auto inputCopy = input;
+    int bitPosition = 0;
+
+    if (foundRating(inputCopy, bitPosition))
+    {
+        long oxygenRating = std::stol(inputCopy[0]);
+
+        return binToDec(oxygenRating);
+    }
+
+    return -1;
+}
+
+int getCO2ScrubberRating(const std::vector<std::string>& input)
+{
+
+    return -1;
+}
+
 int getPartTwoAnswer_1(const std::vector<std::string>& input)
 {
-    return 9;
+    const int oxygenRating = getOxygenGeneratorRating(input);
+    const int co2Rating = getCO2ScrubberRating(input);
+
+    return oxygenRating * co2Rating;
 }
 
 int main(int argc, char* argv[])
@@ -193,8 +263,8 @@ int main(int argc, char* argv[])
         return 1;
     }
 
-    const int answer = getPartOneAnswer_1(input);
-    //const int answer = getPartTwoAnswer_1(input);
+    //const int answer = getPartOneAnswer_1(input);
+    const int answer = getPartTwoAnswer_1(input);
 
     std::cout << "Answer part 1: " << answer << std::endl;
 
