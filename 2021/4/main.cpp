@@ -9,6 +9,7 @@
 struct Board
 {
     std::vector<std::vector<int>> numbers;
+    std::vector<std::vector<bool>> taken;
 };
 
 std::unordered_map<std::string, std::string> parseArgs(int argc, char* argv[])
@@ -149,15 +150,45 @@ int binToDec(long binaryNum)
     return decimalNum;
 }
 
+bool boardWon(const int drawnNumber,
+              std::vector<Board>& boards,
+              int& sumOfBoard)
+{
+    int elementsInRowTaken = 0;
+    int elementsInColumnTaken = 0;
+
+    for (int i = 0; i < boards.size(); i++)
+    {
+        auto board = boards[i];
+
+        for (int j = 0; j < board.numbers.size(); j++)
+        {
+            for (int k = 0; k < board.numbers[j].size(); k++)
+            {
+                const int num = board.numbers[j][k];
+                if (num == drawnNumber)
+                {
+                    board.taken[j][k] = true;
+                }
+            }
+        }
+    }
+}
+
 int getPartOneAnswer_1(const std::vector<int>& drawnNumbers,
                        const std::vector<Board>& boards)
 {
+    int sumOfBoard = 0;
+
     size_t i = 0;
     for (; i < drawnNumbers.size(); i++)
     {
-        const int number = drawnNumbers[i]; 
+        const int drawnNumber= drawnNumbers[i];
 
-        
+        if (boardWon(drawnNumber, boards, sumOfBoard))
+        {
+            break;
+        }
     }
 
     return -1;
