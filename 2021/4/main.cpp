@@ -6,10 +6,65 @@
 #include <unistd.h>
 #include <unordered_map>
 
+struct BoardNumber
+{
+    BoardNumber(int number, bool taken) : number(number), taken(taken)
+    {
+
+    }
+
+    int number = 0;
+    bool taken = false;
+};
+
 struct Board
 {
-    std::vector<std::vector<int>> numbers;
-    std::vector<std::vector<bool>> taken;
+    int getSumOfBoard()
+    {
+        int sumOfBoard = 0;
+
+        for (const auto& row : this->grid)
+        {
+            for (const auto& boardNumber : row)
+            {
+                sumOfBoard += boardNumber.number;
+            }
+        }
+
+        return sumOfBoard;
+    }
+
+    bool hasBingo()
+    {
+        int numTakenCol = 0;
+
+        for (size_t i = 0; i < this->grid.size(); i++)
+        {
+            int numTakenRow = 0;
+
+            for (size_t j = 0; j < this->grid[i].size(); j++)
+            {
+                if (this->grid[i][j].taken)
+                {
+                    numTakenRow++;
+                }
+
+                if (this->grid[j][i].taken)
+                {
+                    numTakenCol++;
+                }
+
+                if (numTakenRow == 5 || numTakenCol == 5)
+                {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    std::vector<std::vector<BoardNumber>> grid;
 };
 
 std::unordered_map<std::string, std::string> parseArgs(int argc, char* argv[])
@@ -111,19 +166,27 @@ std::tuple<std::vector<int>, std::vector<Board>> getInput(std::unordered_map<std
     {
         if (line != "")
         {
-            board.numbers.push_back(splitString(line, " "));
+            const auto& subStrings = splitString(line, " ");
+
+            std::vector<BoardNumber> row;
+            for (const auto& number : subStrings)
+            {
+                row.push_back(BoardNumber(number, false));
+            }
+
+            board.grid.push_back(row);
         }
         else
         {
-            if (!board.numbers.empty())
+            if (!board.grid.empty())
             {
                 boards.push_back(board);
-                board.numbers.clear();
+                board.grid.clear();
             }
         }
     }
 
-    if (!board.numbers.empty())
+    if (!board.grid.empty())
     {
         boards.push_back(board);
     }
@@ -151,28 +214,33 @@ int binToDec(long binaryNum)
 }
 
 bool boardWon(const int drawnNumber,
-              std::vector<Board>& boards,
+              const std::vector<Board>& boards,
               int& sumOfBoard)
 {
-    int elementsInRowTaken = 0;
-    int elementsInColumnTaken = 0;
-
-    for (int i = 0; i < boards.size(); i++)
+    for (size_t i = 0; i < boards.size(); i++)
     {
         auto board = boards[i];
 
-        for (int j = 0; j < board.numbers.size(); j++)
+        for (size_t j = 0; j < board.grid.size(); j++)
         {
-            for (int k = 0; k < board.numbers[j].size(); k++)
+            for (size_t k = 0; k < board.grid[j].size(); k++)
             {
-                const int num = board.numbers[j][k];
+                const int num = board.grid[j][k].number;
                 if (num == drawnNumber)
                 {
-                    board.taken[j][k] = true;
+                    board.grid[j][k].taken = true;
+
+                    if (board.hasBingo())
+                    {
+                        sumOfBoard = board.getSumOfBoard();
+                        return true;
+                    }
                 }
             }
         }
     }
+
+    return false;
 }
 
 int getPartOneAnswer_1(const std::vector<int>& drawnNumbers,
@@ -181,9 +249,10 @@ int getPartOneAnswer_1(const std::vector<int>& drawnNumbers,
     int sumOfBoard = 0;
 
     size_t i = 0;
+    int drawnNumber = 0;
     for (; i < drawnNumbers.size(); i++)
     {
-        const int drawnNumber= drawnNumbers[i];
+        drawnNumber= drawnNumbers[i];
 
         if (boardWon(drawnNumber, boards, sumOfBoard))
         {
@@ -191,7 +260,26 @@ int getPartOneAnswer_1(const std::vector<int>& drawnNumbers,
         }
     }
 
-    return -1;
+    // debug
+    std::cout << std::endl;
+    for (const auto& board : boards)
+    {
+        for (const auto& gridRow : board.grid)
+        {
+            for (const auto& boardNumber : gridRow)
+            {
+                std::cout << boardNumber.taken << " ";
+            }
+            std::cout << std::endl;
+        }
+        std::cout << std::endl;
+    }
+    // debug
+
+    std::cout << "drawnNumber: " << drawnNumber << std::endl;
+    std::cout << "sumOfBoard: " << sumOfBoard << std::endl;
+
+    return drawnNumber * sumOfBoard;
 }
 
 int getPartTwoAnswer_1(const std::vector<std::string>& input)
@@ -214,6 +302,8 @@ int main(int argc, char* argv[])
         return 1;
     }
 
+    // Alt solution: put each board in an std::unordered_map, with the numbers as keys and position as value.
+    // Then, a vector with 10 places for the 10 possible rows+columns that are incremented for each taken number,
     const int answer = getPartOneAnswer_1(drawnNumbers, boards);
     //const int answer = getPartTwoAnswer_1(input);
 
