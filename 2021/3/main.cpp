@@ -6,6 +6,8 @@
 #include <unistd.h>
 #include <unordered_map>
 
+#include <stdlib.h>
+
 std::unordered_map<std::string, std::string> parseArgs(int argc, char* argv[])
 {
     std::unordered_map<std::string, std::string> arguments;
@@ -204,7 +206,34 @@ int findMostCommonBit(const std::vector<std::string>& input, const int bitPositi
     }
 }
 
-bool foundRating(std::vector<std::string> input, int& bitPosition)
+void removeEntries(std::vector<std::string>& input,
+                   int mostCommonBit,
+                   int bitPosition)
+{
+    for (auto it = input.begin(); it != input.end();)
+    {
+        if (static_cast<int>((*it)[bitPosition]) != mostCommonBit)
+        {
+            it = input.erase(it);
+        }
+        else
+        {
+            it++;
+        }
+    }
+
+    //for (size_t i = 0; i < input.size(); i++)
+    //{
+    //    int firstBit = static_cast<int>(input[i][bitPosition]);
+
+    //    if (firstBit != mostCommonBit)
+    //    {
+    //        input.erase(input.begin() + i);
+    //    }
+    //}
+}
+
+bool foundRating(std::vector<std::string>& input, int& bitPosition)
 {
     if (input.size() == 1)
     {
@@ -213,7 +242,8 @@ bool foundRating(std::vector<std::string> input, int& bitPosition)
     else
     {
         int mostCommonBit = findMostCommonBit(input, bitPosition);
-        // bump bitPosition
+        removeEntries(input, mostCommonBit, bitPosition);
+        bitPosition++;
         return foundRating(input, bitPosition);
     }
 
@@ -244,7 +274,8 @@ int getCO2ScrubberRating(const std::vector<std::string>& input)
 int getPartTwoAnswer_1(const std::vector<std::string>& input)
 {
     const int oxygenRating = getOxygenGeneratorRating(input);
-    const int co2Rating = getCO2ScrubberRating(input);
+    std::cout << "oxygenRating: " << oxygenRating << std::endl;
+    const int co2Rating = 0;//getCO2ScrubberRating(input);
 
     return oxygenRating * co2Rating;
 }
