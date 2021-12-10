@@ -207,33 +207,41 @@ int findMostCommonBit(const std::vector<std::string>& input, const int bitPositi
 }
 
 void removeEntries(std::vector<std::string>& input,
-                   int mostCommonBit,
-                   int bitPosition)
+                   const int mostCommonBit,
+                   const int bitPosition,
+                   const bool removeLeastCommon)
 {
-    for (auto it = input.begin(); it != input.end();)
+    if (removeLeastCommon)
     {
-        if (static_cast<int>((*it)[bitPosition]) != mostCommonBit)
+        for (auto it = input.begin(); it != input.end();)
         {
-            it = input.erase(it);
-        }
-        else
-        {
-            it++;
+            if (((int)(*it)[bitPosition] - '0') != mostCommonBit)
+            {
+                it = input.erase(it);
+            }
+            else
+            {
+                it++;
+            }
         }
     }
-
-    //for (size_t i = 0; i < input.size(); i++)
-    //{
-    //    int firstBit = static_cast<int>(input[i][bitPosition]);
-
-    //    if (firstBit != mostCommonBit)
-    //    {
-    //        input.erase(input.begin() + i);
-    //    }
-    //}
+    else
+    {
+        for (auto it = input.begin(); it != input.end();)
+        {
+            if (((int)(*it)[bitPosition] - '0') == mostCommonBit)
+            {
+                it = input.erase(it);
+            }
+            else
+            {
+                it++;
+            }
+        }
+    }
 }
 
-bool foundRating(std::vector<std::string>& input, int& bitPosition)
+bool foundRating(std::vector<std::string>& input, int& bitPosition, bool removeLeastCommon)
 {
     if (input.size() == 1)
     {
@@ -242,20 +250,20 @@ bool foundRating(std::vector<std::string>& input, int& bitPosition)
     else
     {
         int mostCommonBit = findMostCommonBit(input, bitPosition);
-        removeEntries(input, mostCommonBit, bitPosition);
+        removeEntries(input, mostCommonBit, bitPosition, removeLeastCommon);
         bitPosition++;
-        return foundRating(input, bitPosition);
+        return foundRating(input, bitPosition, removeLeastCommon);
     }
 
     return false;
 }
 
-int getOxygenGeneratorRating(const std::vector<std::string>& input)
+int getRating(const std::vector<std::string>& input, bool removeLeastCommon)
 {
     auto inputCopy = input;
     int bitPosition = 0;
 
-    if (foundRating(inputCopy, bitPosition))
+    if (foundRating(inputCopy, bitPosition, removeLeastCommon))
     {
         long oxygenRating = std::stol(inputCopy[0]);
 
@@ -273,9 +281,10 @@ int getCO2ScrubberRating(const std::vector<std::string>& input)
 
 int getPartTwoAnswer_1(const std::vector<std::string>& input)
 {
-    const int oxygenRating = getOxygenGeneratorRating(input);
+    const int oxygenRating = getRating(input, true);
     std::cout << "oxygenRating: " << oxygenRating << std::endl;
-    const int co2Rating = 0;//getCO2ScrubberRating(input);
+    const int co2Rating = getRating(input, false);
+    std::cout << "co2Rating: " << co2Rating << std::endl;
 
     return oxygenRating * co2Rating;
 }
