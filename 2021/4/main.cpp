@@ -5,6 +5,7 @@
 #include <ctype.h>
 #include <unistd.h>
 #include <unordered_map>
+#include <chrono>
 
 struct BoardNumber
 {
@@ -23,11 +24,15 @@ struct Board
     {
         int sumOfBoard = 0;
 
+        std::cout << "boardNumber:" << std::endl;
         for (const auto& row : this->grid)
         {
             for (const auto& boardNumber : row)
             {
-                sumOfBoard += boardNumber.number;
+                if (!boardNumber.taken)
+                {
+                    sumOfBoard += boardNumber.number;
+                }
             }
         }
 
@@ -36,11 +41,12 @@ struct Board
 
     bool hasBingo()
     {
-        int numTakenCol = 0;
+        //int numTakenCol = 0;
 
         for (size_t i = 0; i < this->grid.size(); i++)
         {
             int numTakenRow = 0;
+            int numTakenCol = 0;
 
             for (size_t j = 0; j < this->grid[i].size(); j++)
             {
@@ -214,12 +220,12 @@ int binToDec(long binaryNum)
 }
 
 bool boardWon(const int drawnNumber,
-              const std::vector<Board>& boards,
+              std::vector<Board>& boards,
               int& sumOfBoard)
 {
     for (size_t i = 0; i < boards.size(); i++)
     {
-        auto board = boards[i];
+        auto &board = boards[i];
 
         for (size_t j = 0; j < board.grid.size(); j++)
         {
@@ -244,7 +250,7 @@ bool boardWon(const int drawnNumber,
 }
 
 int getPartOneAnswer_1(const std::vector<int>& drawnNumbers,
-                       const std::vector<Board>& boards)
+                       std::vector<Board>& boards)
 {
     int sumOfBoard = 0;
 
@@ -261,19 +267,19 @@ int getPartOneAnswer_1(const std::vector<int>& drawnNumbers,
     }
 
     // debug
-    std::cout << std::endl;
-    for (const auto& board : boards)
-    {
-        for (const auto& gridRow : board.grid)
-        {
-            for (const auto& boardNumber : gridRow)
-            {
-                std::cout << boardNumber.taken << " ";
-            }
-            std::cout << std::endl;
-        }
-        std::cout << std::endl;
-    }
+    //std::cout << std::endl;
+    //for (const auto& board : boards)
+    //{
+    //    for (const auto& gridRow : board.grid)
+    //    {
+    //        for (const auto& boardNumber : gridRow)
+    //        {
+    //            std::cout << boardNumber.taken << " ";
+    //        }
+    //        std::cout << std::endl;
+    //    }
+    //    std::cout << std::endl;
+    //}
     // debug
 
     std::cout << "drawnNumber: " << drawnNumber << std::endl;
@@ -284,6 +290,8 @@ int getPartOneAnswer_1(const std::vector<int>& drawnNumbers,
 
 int getPartTwoAnswer_1(const std::vector<std::string>& input)
 {
+    (void)input;
+
     return 9;
 }
 
@@ -304,10 +312,14 @@ int main(int argc, char* argv[])
 
     // Alt solution: put each board in an std::unordered_map, with the numbers as keys and position as value.
     // Then, a vector with 10 places for the 10 possible rows+columns that are incremented for each taken number,
+    auto start = std::chrono::steady_clock::now();
     const int answer = getPartOneAnswer_1(drawnNumbers, boards);
+    auto end = std::chrono::steady_clock::now();
     //const int answer = getPartTwoAnswer_1(input);
+    std::chrono::duration<double> elapsed_seconds = end-start;
 
     std::cout << "Answer part 1: " << answer << std::endl;
+    std::cout << "elapsed time: " << elapsed_seconds.count() << std::endl;
 
     return 0;
 }
