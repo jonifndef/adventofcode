@@ -8,15 +8,28 @@
 #include <chrono>
 
 #include <ctype.h>
+#include <string.h>
+
+struct Coord
+{
+    int x = 0;
+    int y = 0;
+};
+
+struct Input
+{
+    std::pair<Coord, Coord> line;
+};
 
 std::unordered_map<std::string, std::string> parseArgs(int argc, char* argv[])
 {
     std::unordered_map<std::string, std::string> arguments;
 
     const static std::string usage =
-        "Usage: aoc -i inputfile [-s solution_number]\n"
+        "Usage: aoc -i inputfile -p part [-s solution_number]\n"
         "\t-i inputfile: specify inputfile. Required\n"
-        "\t-s solution_number: specify solution number if multiple are available\n"
+        "\t-p part: specify which part to solve. Required\n"
+        "\t-s solution: specify solution number if multiple are available\n"
         "\t-h: prints this message";
 
     bool invalid = false;
@@ -31,10 +44,10 @@ std::unordered_map<std::string, std::string> parseArgs(int argc, char* argv[])
             case 'p':
                 {
                     auto part = optarg;
-                    
-                    if (!isdigit(std::atoi(part)))
+
+                    if (!isdigit(std::stoi(part)))
                     {
-                        std::cout << "Option -" << optopt << " requires an integer argument" << std::endl;
+                        std::cout << "Option -" << arg << " requires an integer argument" << std::endl;
                         break;
                     }
 
@@ -46,11 +59,16 @@ std::unordered_map<std::string, std::string> parseArgs(int argc, char* argv[])
                 break;
             case 'h':
                 std::cout << usage << std::endl;
+                invalid = true;
                 break;
             case '?':
                 if (optopt == 'i')
                 {
                     std::cout << "Option -" << optopt << " requires an argument" << std::endl;
+                }
+                if (optopt == 'p')
+                {
+                    std::cout << "Option -" << optopt << " requires an integer argument" << std::endl;
                 }
                 else
                 {
@@ -64,10 +82,11 @@ std::unordered_map<std::string, std::string> parseArgs(int argc, char* argv[])
     }
 
     if (!invalid &&
-        !arguments.contains("input") &&
-        !arguments.contains("part"))
+        (!arguments.contains("input") ||
+         !arguments.contains("part")))
     {
-        std::cout << "Argument -i inputFile is required" << std::endl;
+        std::cout << usage << std::endl;
+        arguments.clear();
     }
 
     return arguments;
@@ -75,14 +94,19 @@ std::unordered_map<std::string, std::string> parseArgs(int argc, char* argv[])
 
 std::vector<std::string> splitString(const std::string& inputString, const char* deliminator)
 {
-    std::vector<int> numbers;
+    std::vector<std::string> subStrings;
+
+    const int len = strlen(deliminator);
+    char *buff = (char*)calloc(len, sizeof(char));
 
     const char* token = inputString.c_str();
     bool tokenStarted = false;
     std::string subString;
     while (*token != '\0')
     {
-        if (*token != *deliminator)
+        strncpy(buff, token, len);
+
+        if (strncmp(buff, deliminator, len))
         {
             tokenStarted = true;
             subString += *token;
@@ -91,123 +115,85 @@ std::vector<std::string> splitString(const std::string& inputString, const char*
         {
             if (tokenStarted)
             {
-                numbers.push_back(std::stoi(subString));
+                subStrings.push_back(subString);
                 tokenStarted = false;
                 subString.clear();
             }
+            token += (len - 1);
         }
         token++;
     }
 
     if (tokenStarted && !subString.empty())
     {
-        numbers.push_back(std::stoi(subString));
+        subStrings.push_back(subString);
     }
 
-    return numbers;
+    free(buff);
+    return subStrings;
 }
 
-template<typename T>
-std::vector<T> getInput(std::unordered_map<std::string, std::string> arguments)
+Input formatInput(const std::vector<std::string>& subStrings)
 {
+    Input input = {};
+
+    if (subStrings.size() != 2)
+    {
+        std::cout << "Error when parsing!" << std::endl;
+        return input;
+    }
+
+    const auto coordsFirst = splitString(subStrings[0], ",");
+    const auto coordsSecond = splitString(subStrings[1], ",");
+
+    input.line.first.x = std::stoi(coordsFirst[0]);
+    input.line.first.y = std::stoi(coordsFirst[1]);
+
+    input.line.second.x = std::stoi(coordsSecond[0]);
+    input.line.second.y = std::stoi(coordsSecond[1]);
+
+    return input;
+}
+
+std::vector<Input> getInput(std::unordered_map<std::string, std::string> arguments)
+{
+    std::vector<Input> inputs;
     std::ifstream inputFile;
     std::string line;
 
     inputFile.open(arguments["input"], std::ios::in);
 
-    getline(inputFile, line);
-    const auto drawnNumbers = splitString(line, ",");
-
-    std::vector<Board> boards;
-    Board board = {};
-    while (getline(inputFile, line))
+    if (!inputFile.fail())
     {
-        if (line != "")
+        while (getline(inputFile, line))
         {
-            const auto& subStrings = splitString(line, " ");
-
-            std::vector<BoardNumber> row;
-            for (const auto& number : subStrings)
-            {
-                row.push_back(BoardNumber(number, false));
-            }
-
-            board.grid.push_back(row);
+            const auto subStrings = splitString(line, " -> ");
+            inputs.push_back(formatInput(subStrings));
         }
-        else
-        {
-            if (!board.grid.empty())
-            {
-                boards.push_back(board);
-                board.grid.clear();
-            }
-        }
+
+        inputFile.close();
     }
 
-    if (!board.grid.empty())
-    {
-        boards.push_back(board);
-    }
-
-    inputFile.close();
-
-    return {drawnNumbers, boards};
+    return inputs;
 }
 
-int getPartOneAnswer_1(const std::vector<int>& drawnNumbers,
-                       std::vector<Board>& boards)
+int getPartOneAnswer_1()
 {
-    int sumOfBoard = 0;
-
-    size_t i = 0;
-    int drawnNumber = 0;
-    for (; i < drawnNumbers.size(); i++)
-    {
-        drawnNumber= drawnNumbers[i];
-
-        if (boardWon(drawnNumber, boards, sumOfBoard))
-        {
-            break;
-        }
-    }
-
-    std::cout << "drawnNumber: " << drawnNumber << std::endl;
-    std::cout << "sumOfBoard: " << sumOfBoard << std::endl;
-
-    return drawnNumber * sumOfBoard;
+    return -1;
 }
 
-int getPartTwoAnswer_1(const std::vector<int>& drawnNumbers,
-                       std::vector<Board>& boards)
+int getPartTwoAnswer_1()
 {
-    int sumOfBoard = 0;
-
-    size_t i = 0;
-    int drawnNumber = 0;
-
-    int lastDrawnNumber = 0;
-
-    for (; i < drawnNumbers.size(); i++)
-    {
-        drawnNumber = drawnNumbers[i];
-
-        if (boardWon(drawnNumber, boards, sumOfBoard))
-        {
-            lastDrawnNumber = drawnNumber;
-        }
-    }
-
-    std::cout << "lastDrawnNumber: " << lastDrawnNumber << std::endl;
-    std::cout << "sumOfBoard: " << sumOfBoard << std::endl;
-
-    return drawnNumber * sumOfBoard;
+    return -1;
 }
 
-template<typename T>
-void solve(std::vector<T> input,
+void solve(std::vector<Input> inputs,
            std::unordered_map<std::string, std::string> arguments)
 {
     //if (arguments.contains["
+    (void)inputs;
+    (void)arguments;
+
     std::cout << "" << std::endl;
 }
 
@@ -219,18 +205,19 @@ int main(int argc, char* argv[])
         return 1;
     }
 
-    auto input = getInput(arguments);
+    auto inputs = getInput(arguments);
 
-    if (input.empty())
+    if (inputs.empty())
     {
         return 1;
     }
 
     auto start = std::chrono::steady_clock::now();
-
-    solve(input, arguments);
-
+    solve(inputs, arguments);
+    auto end = std::chrono::steady_clock::now();
     std::chrono::duration<double> elapsed_seconds = end-start;
+
+    std::cout << "Elapsed time: " << elapsed_seconds.count() << " seconds" << std::endl;
 
     return 0;
 }
