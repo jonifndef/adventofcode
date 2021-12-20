@@ -32,9 +32,8 @@ std::unordered_map<std::string, std::string> parseArgs(int argc, char* argv[])
         "\t-s solution: specify solution number if multiple are available\n"
         "\t-h: prints this message";
 
-    bool invalid = false;
     int arg;
-    while ((arg = getopt(argc, argv, "i:p:sh")) != -1)
+    while ((arg = getopt(argc, argv, "i:p:s::h")) != -1)
     {
         switch(arg)
         {
@@ -43,36 +42,36 @@ std::unordered_map<std::string, std::string> parseArgs(int argc, char* argv[])
                 break;
             case 'p':
                 {
-                    auto part = optarg;
-
-                    if (!isdigit(std::stoi(part)))
+                    int part = atoi(optarg);
+                    if (part < 1 || part > 3)
                     {
-                        std::cout << "Option -" << arg << " requires an integer argument" << std::endl;
+                        std::cout << "Invalid argument value for argument "
+                                  << static_cast<char>(optopt) << std::endl;
                         break;
                     }
 
-                    arguments["part"] = std::string(part);
+                    arguments["part"] = std::to_string(part);
                 }
                 break;
             case 's':
                 arguments["solution"] = std::string(optarg);
                 break;
             case 'h':
-                std::cout << usage << std::endl;
-                invalid = true;
+                arguments.clear();
                 break;
             case '?':
                 if (optopt == 'i')
                 {
-                    std::cout << "Option -" << optopt << " requires an argument" << std::endl;
+                    std::cout << "Option -" << static_cast<char>(optopt) << " requires an argument" << std::endl;
                 }
                 if (optopt == 'p')
                 {
-                    std::cout << "Option -" << optopt << " requires an integer argument" << std::endl;
+                    std::cout << "Option -" << static_cast<char>(optopt) << " requires an integer argument" << std::endl;
                 }
                 else
                 {
-                    invalid = true;
+                    arguments.clear();
+                    std::cout << "Invalid argument" << std::endl;
                     std::cout << usage << std::endl;
                 }
                 break;
@@ -81,12 +80,19 @@ std::unordered_map<std::string, std::string> parseArgs(int argc, char* argv[])
         }
     }
 
-    if (!invalid &&
-        (!arguments.contains("input") ||
-         !arguments.contains("part")))
+    if (!arguments.count("input") || !arguments.count("part"))
     {
+        if (!arguments.count("input"))
+        {
+            std::cout << "Argument -i is required" << std::endl;
+            arguments.clear();
+        }
+        if (!arguments.count("part"))
+        {
+            std::cout << "Argument -p is required" << std::endl;
+            arguments.clear();
+        }
         std::cout << usage << std::endl;
-        arguments.clear();
     }
 
     return arguments;
