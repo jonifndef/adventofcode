@@ -12,12 +12,34 @@
 
 struct Coord
 {
+    Coord(int x, int y) : x(x), y(y)
+    {}
+
+    bool operator==(const Coord& other) const
+    {
+        return (this->x == other.x && this->y == other.y);
+    }
+
     int x = 0;
     int y = 0;
 };
 
+template<>
+struct std::hash<Coord>
+{
+    std::size_t operator()(const Coord& other) const
+    {
+        return (std::hash<int>()(other.x) ^
+                std::hash<int>()(other.y) << 1);
+    }
+};
+
 struct Input
 {
+    Input(int x1, int y1, int x2, int y2) :
+          line(std::make_pair<Coord, Coord>(Coord(x1, y1), Coord(x2, y2)))
+    {}
+
     std::pair<Coord, Coord> line;
 };
 
@@ -34,7 +56,7 @@ std::unordered_map<std::string, std::string> parseArgs(int argc, char* argv[])
 
     bool invalid = false;
     int arg;
-    while ((arg = getopt(argc, argv, "i:p:sh")) != -1)
+    while ((arg = getopt(argc, argv, "i:psh")) != -1)
     {
         switch(arg)
         {
@@ -81,13 +103,15 @@ std::unordered_map<std::string, std::string> parseArgs(int argc, char* argv[])
         }
     }
 
-    if (!invalid &&
-        (!arguments.contains("input") ||
-         !arguments.contains("part")))
-    {
-        std::cout << usage << std::endl;
-        arguments.clear();
-    }
+    //if (!invalid &&
+    //    (!arguments.contains("input") ||
+    //     !arguments.contains("part")))
+    //{
+    //    std::cout << usage << std::endl;
+    //    arguments.clear();
+    //}
+    //invalid = false;
+    (void)invalid;
 
     return arguments;
 }
@@ -135,7 +159,7 @@ std::vector<std::string> splitString(const std::string& inputString, const char*
 
 Input formatInput(const std::vector<std::string>& subStrings)
 {
-    Input input = {};
+    Input input(0,0,0,0);
 
     if (subStrings.size() != 2)
     {
@@ -177,9 +201,81 @@ std::vector<Input> getInput(std::unordered_map<std::string, std::string> argumen
     return inputs;
 }
 
-int getPartOneAnswer_1()
+std::vector<Coord> getPointsInLine(const Coord& first, const Coord& second)
 {
-    return -1;
+    const int distanceX = std::abs(first.x - second.x);
+    const int distanceY = std::abs(first.y - second.y);
+
+    const int minX = std::min(first.x, second.x);
+    const int minY = std::min(first.y, second.y);
+
+    std::vector<Coord> pointsInLine;
+
+    for (int i = 0; i < distanceX + 1; i++)
+    {
+        for (int j = 0; j < distanceY + 1; j++)
+        {
+            pointsInLine.push_back(Coord(minX + i, minY + j));
+        }
+    }
+
+    return pointsInLine;
+}
+
+int getPartOneAnswer_1(std::vector<Input> inputs)
+{
+    std::unordered_map<Coord, int> grid;
+
+    for (const auto& input : inputs)
+    {
+        const int x1 = input.line.first.x;
+        const int y1 = input.line.first.y;
+
+        const int x2 = input.line.second.x;
+        const int y2 = input.line.second.y;
+
+        if (x1 == x2 || y1 == y2)
+        {
+            // vertical or horizontal lines
+            // interate through all coords and if it does not exist in map, add it with a value of 0
+            // if it exists in map, increment the value by one
+            const auto pointsInLine = getPointsInLine(input.line.first, input.line.second);
+
+            //std::cout << "points in line with start/end: " << x1 << "," << y1 << " and " << x2 << "," << y2 << std::endl;
+            for (const Coord& point : pointsInLine)
+            {
+                //std::cout << point.x << "," << point.y << std::endl;
+
+                if (grid.contains(point))
+                {
+                    //if (point.x == 0 && point.y == 9)
+                    //{
+                    //    std::cout << "0,9" << std::endl;
+                    //    std::cout << "grid[point] before: " << grid[point] << std::endl;
+                    //}
+
+                    grid[point]++;
+                    //std::cout << "grid[point] after: " << grid[point] << std::endl;
+                }
+                else
+                {
+                    grid[point] = 1;
+                }
+            }
+        }
+    }
+
+    int numPointWithOverlap = 0;
+    for (const auto& it : grid)
+    {
+        //std::cout << "key: " << it.first.x << "," << it.first.y << " - value: " << it.second << std::endl;
+        if (it.second >= 2)
+        {
+            numPointWithOverlap++;
+        }
+    }
+
+    return numPointWithOverlap;
 }
 
 int getPartTwoAnswer_1()
@@ -191,10 +287,11 @@ void solve(std::vector<Input> inputs,
            std::unordered_map<std::string, std::string> arguments)
 {
     //if (arguments.contains["
-    (void)inputs;
     (void)arguments;
 
-    std::cout << "" << std::endl;
+    const int ans = getPartOneAnswer_1(inputs);
+
+    std::cout << "part 1 answer: " << ans << std::endl;
 }
 
 int main(int argc, char* argv[])
