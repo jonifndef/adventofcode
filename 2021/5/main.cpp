@@ -45,8 +45,8 @@ std::unordered_map<std::string, std::string> parseArgs(int argc, char* argv[])
                     int part = atoi(optarg);
                     if (part < 1 || part > 3)
                     {
-                        std::cout << "Invalid argument value for argument "
-                                  << static_cast<char>(optopt) << std::endl;
+                        std::cout << "Invalid argument value for argument -"
+                                  << static_cast<char>(arg) << std::endl;
                         break;
                     }
 
@@ -85,13 +85,13 @@ std::unordered_map<std::string, std::string> parseArgs(int argc, char* argv[])
         if (!arguments.count("input"))
         {
             std::cout << "Argument -i is required" << std::endl;
-            arguments.clear();
         }
         if (!arguments.count("part"))
         {
             std::cout << "Argument -p is required" << std::endl;
-            arguments.clear();
         }
+
+        arguments.clear();
         std::cout << usage << std::endl;
     }
 
@@ -196,7 +196,6 @@ int getPartTwoAnswer_1()
 void solve(std::vector<Input> inputs,
            std::unordered_map<std::string, std::string> arguments)
 {
-    //if (arguments.contains["
     (void)inputs;
     (void)arguments;
 
