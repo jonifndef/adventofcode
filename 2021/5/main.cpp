@@ -20,6 +20,11 @@ struct Coord
         return (this->x == other.x && this->y == other.y);
     }
 
+    bool operator!=(const Coord& other) const
+    {
+        return (this->x != other.x || this->y != other.y);
+    }
+
     int x = 0;
     int y = 0;
 };
@@ -222,6 +227,48 @@ std::vector<Coord> getPointsInLine(const Coord& first, const Coord& second)
     return pointsInLine;
 }
 
+std::vector<Coord> getPointsInDiagonalLine(const Coord& first, const Coord& second)
+{
+    // 8,0 -> 0,8
+    //
+    // 8,0 7,1 6,2 5,3 4,4 3,5 2,6, 1,7, 0,8
+
+    const int minX = std::min(first.x, second.x);
+    Coord startPoint(0, 0);
+    Coord endPoint(0, 0);
+
+    if (first.x == minX)
+    {
+        startPoint = first;
+        endPoint = second;
+    }
+    else
+    {
+        startPoint = second;
+        endPoint = first;
+    }
+
+    std::vector<Coord> pointsInLine;
+
+    while (startPoint != endPoint)
+    {
+        pointsInLine.push_back(startPoint);
+
+        startPoint.x++;
+        if (startPoint.y < endPoint.y)
+        {
+            startPoint.y++;
+        }
+        else
+        {
+            startPoint.y--;
+        }
+    }
+    pointsInLine.push_back(startPoint);
+
+    return pointsInLine;
+}
+
 int getPartOneAnswer_1(std::vector<Input> inputs)
 {
     std::unordered_map<Coord, int> grid;
@@ -236,26 +283,13 @@ int getPartOneAnswer_1(std::vector<Input> inputs)
 
         if (x1 == x2 || y1 == y2)
         {
-            // vertical or horizontal lines
-            // interate through all coords and if it does not exist in map, add it with a value of 0
-            // if it exists in map, increment the value by one
             const auto pointsInLine = getPointsInLine(input.line.first, input.line.second);
 
-            //std::cout << "points in line with start/end: " << x1 << "," << y1 << " and " << x2 << "," << y2 << std::endl;
             for (const Coord& point : pointsInLine)
             {
-                //std::cout << point.x << "," << point.y << std::endl;
-
                 if (grid.contains(point))
                 {
-                    //if (point.x == 0 && point.y == 9)
-                    //{
-                    //    std::cout << "0,9" << std::endl;
-                    //    std::cout << "grid[point] before: " << grid[point] << std::endl;
-                    //}
-
                     grid[point]++;
-                    //std::cout << "grid[point] after: " << grid[point] << std::endl;
                 }
                 else
                 {
@@ -268,7 +302,6 @@ int getPartOneAnswer_1(std::vector<Input> inputs)
     int numPointWithOverlap = 0;
     for (const auto& it : grid)
     {
-        //std::cout << "key: " << it.first.x << "," << it.first.y << " - value: " << it.second << std::endl;
         if (it.second >= 2)
         {
             numPointWithOverlap++;
@@ -278,9 +311,62 @@ int getPartOneAnswer_1(std::vector<Input> inputs)
     return numPointWithOverlap;
 }
 
-int getPartTwoAnswer_1()
+int getPartTwoAnswer_1(const std::vector<Input>& inputs)
 {
-    return -1;
+    std::unordered_map<Coord, int> grid;
+
+    for (const auto& input : inputs)
+    {
+        const int x1 = input.line.first.x;
+        const int y1 = input.line.first.y;
+
+        const int x2 = input.line.second.x;
+        const int y2 = input.line.second.y;
+
+        if (x1 == x2 || y1 == y2)
+        {
+            const auto pointsInLine = getPointsInLine(input.line.first, input.line.second);
+
+            for (const Coord& point : pointsInLine)
+            {
+                if (grid.contains(point))
+                {
+                    grid[point]++;
+                }
+                else
+                {
+                    grid[point] = 1;
+                }
+            }
+        }
+        else
+        {
+            // diagonal lines
+            const auto pointsInDiagonalLine = getPointsInDiagonalLine(input.line.first, input.line.second);
+            for (const Coord& point : pointsInDiagonalLine)
+            {
+                if (grid.contains(point))
+                {
+                    grid[point]++;
+                }
+                else
+                {
+                    grid[point] = 1;
+                }
+            }
+        }
+    }
+
+    int numPointWithOverlap = 0;
+    for (const auto& it : grid)
+    {
+        if (it.second >= 2)
+        {
+            numPointWithOverlap++;
+        }
+    }
+
+    return numPointWithOverlap;
 }
 
 void solve(std::vector<Input> inputs,
@@ -289,9 +375,10 @@ void solve(std::vector<Input> inputs,
     //if (arguments.contains["
     (void)arguments;
 
-    const int ans = getPartOneAnswer_1(inputs);
-
-    std::cout << "part 1 answer: " << ans << std::endl;
+    //const int ans = getPartOneAnswer_1(inputs);
+    //std::cout << "part 1 answer: " << ans << std::endl;
+    const int ans = getPartTwoAnswer_1(inputs);
+    std::cout << "part 2 answer: " << ans << std::endl;
 }
 
 int main(int argc, char* argv[])
