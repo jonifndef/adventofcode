@@ -196,11 +196,52 @@ int getPartOneAnswer_1(const std::vector<Input>& inputs)
     return fishes.size();
 }
 
-int getPartTwoAnswer_1(const std::vector<Input>& inputs)
+unsigned long long getPartTwoAnswer_1(const std::vector<Input>& inputs)
 {
-    (void)inputs;
+    std::unordered_map<int, int> fishes;
 
-    return -1;
+    for (const auto& fish : inputs[0].fishes)
+    {
+        if (fishes.contains(int(fish)))
+        {
+            fishes[int(fish)]++;
+        }
+        else
+        {
+            fishes[int(fish)] = 1;
+        }
+    }
+
+    const size_t maxDays = 256;
+    for (size_t days = 0; days < maxDays; days++)
+    {
+        std::unordered_map<int, int> fishesCopy;
+        for (const auto& it : fishes)
+        {
+            const auto& key = it.first;
+            const auto& val = it.second;
+
+            if (key == 0)
+            {
+                fishesCopy[8] += val;
+                fishesCopy[6] += val;
+            }
+            else
+            {
+                fishesCopy[key - 1] += val;
+            }
+        }
+
+        fishes = fishesCopy;
+    }
+
+    unsigned long long sumOfFishes = 0;
+    for (const auto& it : fishes)
+    {
+        sumOfFishes += it.second;
+    }
+
+    return sumOfFishes;
 }
 
 void solve(std::vector<Input> inputs,
@@ -214,7 +255,7 @@ void solve(std::vector<Input> inputs,
     }
     else if (std::stoi(arguments["part"]) == 2)
     {
-        const int ans = getPartTwoAnswer_1(inputs);
+        const auto ans = getPartTwoAnswer_1(inputs);
         std::cout << "part 2 answer: " << ans << std::endl;
     }
 }
