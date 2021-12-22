@@ -6,6 +6,7 @@
 #include <unistd.h>
 #include <unordered_map>
 #include <chrono>
+#include <numeric>
 
 #include <ctype.h>
 #include <string.h>
@@ -198,7 +199,7 @@ int getPartOneAnswer_1(const std::vector<Input>& inputs)
 
 unsigned long long getPartTwoAnswer_1(const std::vector<Input>& inputs)
 {
-    std::unordered_map<int, int> fishes;
+    std::unordered_map<int, long> fishes;
 
     for (const auto& fish : inputs[0].fishes)
     {
@@ -215,7 +216,7 @@ unsigned long long getPartTwoAnswer_1(const std::vector<Input>& inputs)
     const size_t maxDays = 256;
     for (size_t days = 0; days < maxDays; days++)
     {
-        std::unordered_map<int, int> fishesCopy;
+        std::unordered_map<int, long> fishesCopy;
         for (const auto& it : fishes)
         {
             const auto& key = it.first;

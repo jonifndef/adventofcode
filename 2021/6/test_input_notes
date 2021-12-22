@@ -1,7 +1,0 @@
-3,4,3,1,2
-2,3,2,0,1           i = 1
-1,2,1,6,0,8         i = 2
-0,1,0,5,6,7,8       i = 3
-6,0,6,4,5,6,7,8,8   i = 4
-
-the current implementation has a problem: we decrement the number of existing fishes in each "age", but we don't add the new age groups, e.g. if there are 2 fishes with an age of 5, we say that there are instead 1 fish with that age. There should instead be 2 fishes with the "new" age of 4.
