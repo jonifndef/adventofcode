@@ -199,14 +199,17 @@ int getPartTwoAnswer_1(const std::vector<Input>& inputs)
     // just one row in inputs this time
     std::vector<int> crabs = inputs[0].crabs;
 
-    std::vector<int> positions(crabs.size(), 0);
+    const int minPos = *(std::min_element(crabs.begin(), crabs.end()));
+    const int maxPos = *(std::max_element(crabs.begin(), crabs.end()));
+    std::vector<int> positions(maxPos - minPos, 0);
 
-    for (const auto& pos : crabs)
+    for (int pos = minPos; pos <= maxPos; pos++)
     {
         for (size_t i = 0; i < crabs.size(); i++)
         {
             const int currPos = crabs[i];
-            positions[i] += getCost(std::abs(pos - currPos));
+            const int cost = getCost(std::abs(pos - currPos)); 
+            positions[pos] += cost;
         }
     }
 
