@@ -12,23 +12,22 @@
 #include <string.h>
 #include <math.h>
 
-// 0 - 6
-// 1 - 2
-// 2 - 5
-// 3 - 5
-// 4 - 4
-// 5 - 5
-// 6 - 6
-// 7 - 3
-// 8 - 7
-// 9 - 6
-
 // 3 digits use 6 segments: 0 6 9
 // 1 digit  use 2 segments: 1
 // 1 digit  use 4 segments: 4
 // 3 digits use 5 segments: 2 3 5
 // 1 digit  use 3 segments: 7
 // 1 digit  use 7 segments: 8
+
+// for 6 segments:
+// if it has 1 segments in common 1, then it's a 6.
+// if it has 4 segments in common with 4, then it's a 9, if lower, it's a 0
+
+// for 5 segments:
+// if it has 2 segments in common 1, then it's a 3
+// if it has 3 segments in common with 4, it's a 5, if lower, it's a 2
+
+const std::vector<int> numDigitsInNumber = { 6, 2, 5, 5, 4, 5, 6, 3, 7, 6 };
 
 struct Input
 {
@@ -190,9 +189,24 @@ std::vector<Input> getInput(std::unordered_map<std::string, std::string> argumen
 
 int getPartOneAnswer_1(const std::vector<Input>& inputs)
 {
-    (void)inputs;
+    int occurrences = 0;
 
-    return -1;
+    for (const auto& it : inputs)
+    {
+        for (const auto& segmentSignals : it.entry.second)
+        {
+            const int len = segmentSignals.size();
+            if (len == numDigitsInNumber[1] ||
+                len == numDigitsInNumber[4] ||
+                len == numDigitsInNumber[7] ||
+                len == numDigitsInNumber[8])
+            {
+                occurrences++;
+            }
+        }
+    }
+
+    return occurrences;
 }
 
 int getPartTwoAnswer_1(const std::vector<Input>& inputs)
