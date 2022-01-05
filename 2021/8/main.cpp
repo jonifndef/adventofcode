@@ -12,21 +12,6 @@
 #include <string.h>
 #include <math.h>
 
-// 3 digits use 6 segments: 0 6 9
-// 1 digit  use 2 segments: 1
-// 1 digit  use 4 segments: 4
-// 3 digits use 5 segments: 2 3 5
-// 1 digit  use 3 segments: 7
-// 1 digit  use 7 segments: 8
-
-// for 6 segments:
-// if it has 1 segments in common 1, then it's a 6.
-// if it has 4 segments in common with 4, then it's a 9, if lower, it's a 0
-
-// for 5 segments:
-// if it has 2 segments in common 1, then it's a 3
-// if it has 3 segments in common with 4, it's a 5, if lower, it's a 2
-
 const std::vector<int> numDigitsInNumber = { 6, 2, 5, 5, 4, 5, 6, 3, 7, 6 };
 
 struct Input
@@ -187,6 +172,21 @@ std::vector<Input> getInput(std::unordered_map<std::string, std::string> argumen
     return inputs;
 }
 
+bool match(const std::string& first, const std::string& second, const int numDigits)
+{
+    int numMatched = 0;
+
+    for (const auto& character : second)
+    {
+        if (first.find(character) != std::string::npos)
+        {
+            numMatched++;
+        }
+    }
+
+    return (numMatched == numDigits);
+}
+
 int getPartOneAnswer_1(const std::vector<Input>& inputs)
 {
     int occurrences = 0;
@@ -211,9 +211,101 @@ int getPartOneAnswer_1(const std::vector<Input>& inputs)
 
 int getPartTwoAnswer_1(const std::vector<Input>& inputs)
 {
-    (void)inputs;
+    // 3 digits use 6 segments: 0 6 9
+    // 1 digit  use 2 segments: 1
+    // 1 digit  use 4 segments: 4
+    // 3 digits use 5 segments: 2 3 5
+    // 1 digit  use 3 segments: 7
+    // 1 digit  use 7 segments: 8
 
-    return -1;
+    // for 6 segments:
+    // if it has 1 segments in common 1, then it's a 6.
+    // if it has 4 segments in common with 4, then it's a 9, if lower, it's a 0
+
+    // for 5 segments:
+    // if it has 2 segments in common 1, then it's a 3
+    // if it has 3 segments in common with 4, it's a 5, if lower, it's a 2
+
+    int sum = 0;
+
+    for (const auto& it : inputs)
+    {
+        auto wordList = it.entry.first;
+        std::sort(wordList.begin(), wordList.end(), []
+            (const std::string& first, const std::string& second) {
+                return first.size() < second.size();
+            });
+
+        std::unordered_map<std::string, int> wordToDigit;
+        std::unordered_map<int, std::string> digitToWord;
+
+        for (auto& digitWord : wordList)
+        {
+            std::sort(digitWord.begin(), digitWord.end());
+
+            switch(digitWord.size())
+            {
+                case 2:
+                    wordToDigit[digitWord] = 1;
+                    digitToWord[1] = digitWord;
+                    break;
+                case 3:
+                    wordToDigit[digitWord] = 7;
+                    break;
+                case 4:
+                    wordToDigit[digitWord] = 4;
+                    digitToWord[4] = digitWord;
+                    break;
+                case 7:
+                    wordToDigit[digitWord] = 8;
+                    break;
+                case 5:
+                    if (match(digitWord, digitToWord[1], 2))
+                    {
+                        wordToDigit[digitWord] = 3;
+                    }
+                    else if (match(digitWord, digitToWord[4], 3))
+                    {
+                        wordToDigit[digitWord] = 5;
+                    }
+                    else
+                    {
+                        wordToDigit[digitWord] = 2;
+                    }
+
+                    break;
+
+                case 6:
+                    if (match(digitWord, digitToWord[1], 1))
+                    {
+                        wordToDigit[digitWord] = 6;
+                    }
+                    else if (match(digitWord, digitToWord[4], 4))
+                    {
+                        wordToDigit[digitWord] = 9;
+                    }
+                    else
+                    {
+                        wordToDigit[digitWord] = 0;
+                    }
+
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        std::string outputValueString;
+        for (auto outputValue : it.entry.second)
+        {
+            std::sort(outputValue.begin(), outputValue.end());
+            outputValueString.append(std::to_string(wordToDigit[outputValue]));
+        }
+
+        sum += std::stoi(outputValueString);
+    }
+
+    return sum;
 }
 
 void solve(std::vector<Input> inputs,
