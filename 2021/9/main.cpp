@@ -13,9 +13,15 @@
 #include <string.h>
 #include <math.h>
 
+struct Point
+{
+    int height = 0;
+    bool traversed = false;
+};
+
 struct Input
 {
-    std::vector<std::vector<std::pair<int, bool>>> heightmap;
+    std::vector<std::vector<Point>> heightmap;
 };
 
 std::unordered_map<std::string, std::string> parseArgs(int argc, char* argv[])
@@ -157,14 +163,16 @@ std::vector<Input> getInput(std::unordered_map<std::string, std::string> argumen
     {
         while (getline(inputFile, line))
         {
-            std::vector<std::pair<int, bool>> col;
+            std::vector<Point> col;
             for (const auto& it : line)
             {
                 std::stringstream strValue;
                 strValue << it;
                 int intValue;
                 strValue >> intValue;
-                col.push_back(std::pair<int, bool>(intValue, false));
+                Point point = {};
+                point.height = intValue;
+                col.push_back(point);
             }
 
             input.heightmap.push_back(std::move(col));
@@ -177,39 +185,92 @@ std::vector<Input> getInput(std::unordered_map<std::string, std::string> argumen
     return inputs;
 }
 
-bool traverse(Input input, int x, int y, int& height)
+bool checkBoarders(const Input& input, int x, int y)
 {
-    // if taken, return false
-    // beware of corners and boarders, though!
-    // if up is lower and not taken
-    //  traverse
-    // else if left is lower and not taken
-    //  traverse
-    // else if right is lower and not taken
-    //  traverse
-    // else if down is lower and not taken
-    //  traverse
-    // else
-    //
-    //  height = input.heightmap[currPos.x][currPos.y];
-    //  return true, this height is the lowest
-    //
-    //  Wait, don't return if we find a local minimum - just add it to a list of minimums!
+    return ((x < (int)input.heightmap.size() && x >= 0) &&
+            (y < (int)input.heightmap[x].size() && y >= 0));
+}
+
+bool higher(const Input& input, const Point& currPoint, int x, int y)
+{
+    if (checkBoarders(input, x, y))
+    {
+        if (input.heightmap[x][y].height > currPoint.height)
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+bool traversable(const Input& input, int x, int y)
+{
+    if (checkBoarders(input, x, y))
+    {
+        bool traversed = input.heightmap[x][y].traversed;
+        if (!traversed)
+        {
+            return true;
+        }
+    }
 
     return false;
+    //return (checkBoarders(input, x, y) && !input.heightmap[x][y].traversed);
+}
+
+void traverse(Input &input,
+              std::vector<int>& localMins,
+              int x,
+              int y)
+{
+    Point& point = input.heightmap[x][y];
+    point.traversed = true;
+
+    if (higher(input, point, x + 1, y) &&
+        higher(input, point, x - 1, y) &&
+        higher(input, point, x, y + 1) &&
+        higher(input, point, x, y - 1))
+    {
+        localMins.push_back(point.height + 1);
+    }
+
+    if (traversable(input, x + 1, y))
+    {
+        traverse(input, localMins, x + 1, y);
+    }
+    if (traversable(input, x - 1, y))
+    {
+        traverse(input, localMins, x - 1, y);
+    }
+    if (traversable(input, x, y + 1))
+    {
+        traverse(input, localMins, x, y + 1);
+    }
+    if (traversable(input, x, y - 1))
+    {
+        traverse(input, localMins, x, y - 1);
+    }
 }
 
 int getPartOneAnswer_1(const std::vector<Input>& inputs)
 {
-    auto& heightmap = inputs[0];
-    int height = -1;
+    Input input = inputs[0];
+    std::vector<int> localMins;
 
-    if (traverse(heightmap, 0, 0, height))
+    traverse(input, localMins, 0, 0);
+
+    int sum = 0;
+    for (const auto& it : localMins)
     {
-        return height;
+        sum += it;
     }
 
-    return -1;
+    return sum;
 }
 
 int getPartTwoAnswer_1(const std::vector<Input>& inputs)
