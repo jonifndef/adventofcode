@@ -257,6 +257,41 @@ void traverse(Input &input,
     }
 }
 
+void traversePartTwo(Input &input,
+                     std::vector<int>& localMins,
+                     int x,
+                     int y)
+{
+    Point& point = input.heightmap[x][y];
+    point.traversed = true;
+
+    if (higher(input, point, x + 1, y) &&
+        higher(input, point, x - 1, y) &&
+        higher(input, point, x, y + 1) &&
+        higher(input, point, x, y - 1))
+    {
+        localMins.push_back(point.height + 1);
+        // we found a local minimum, traverse outwards from here and start counting numbers withing the basin
+    }
+
+    if (traversable(input, x + 1, y))
+    {
+        traversePartTwo(input, localMins, x + 1, y);
+    }
+    if (traversable(input, x - 1, y))
+    {
+        traversePartTwo(input, localMins, x - 1, y);
+    }
+    if (traversable(input, x, y + 1))
+    {
+        traversePartTwo(input, localMins, x, y + 1);
+    }
+    if (traversable(input, x, y - 1))
+    {
+        traversePartTwo(input, localMins, x, y - 1);
+    }
+}
+
 int getPartOneAnswer_1(const std::vector<Input>& inputs)
 {
     Input input = inputs[0];
@@ -275,9 +310,17 @@ int getPartOneAnswer_1(const std::vector<Input>& inputs)
 
 int getPartTwoAnswer_1(const std::vector<Input>& inputs)
 {
-    (void)inputs;
+    Input input = inputs[0];
+    std::vector<int> basins;
 
-    return -1;
+    traversePartTwo(input, basins, 0, 0);
+
+    std::sort(basins.begin(), basins.end(), []
+        (int a, int b) {
+            return a > b;
+        });
+
+    return basins[0] * basins[1] * basins[2];
 }
 
 void solve(std::vector<Input> inputs,
