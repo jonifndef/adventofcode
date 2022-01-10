@@ -17,6 +17,7 @@ struct Point
 {
     int height = 0;
     bool traversed = false;
+    bool counted = false;
 };
 
 struct Input
@@ -212,15 +213,54 @@ bool traversable(const Input& input, int x, int y)
 {
     if (checkBoarders(input, x, y))
     {
-        bool traversed = input.heightmap[x][y].traversed;
-        if (!traversed)
+        if (!input.heightmap[x][y].traversed)
         {
             return true;
         }
     }
 
     return false;
-    //return (checkBoarders(input, x, y) && !input.heightmap[x][y].traversed);
+}
+
+bool countable(const Input& input, int x, int y)
+{
+    if (checkBoarders(input, x, y))
+    {
+        const Point& point = input.heightmap[x][y];
+        if (!point.counted && point.height != 9)
+        {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+void count(Input& input,
+           int& sumCount,
+           int x,
+           int y)
+{
+    Point& point = input.heightmap[x][y];
+    sumCount++;
+    point.counted = true;
+
+    if (countable(input, x + 1, y))
+    {
+        count(input, sumCount, x + 1, y);
+    }
+    if (countable(input, x - 1, y))
+    {
+        count(input, sumCount, x - 1, y);
+    }
+    if (countable(input, x, y + 1))
+    {
+        count(input, sumCount, x, y + 1);
+    }
+    if (countable(input, x, y - 1))
+    {
+        count(input, sumCount, x, y - 1);
+    }
 }
 
 void traverse(Input &input,
@@ -258,37 +298,38 @@ void traverse(Input &input,
 }
 
 void traversePartTwo(Input &input,
-                     std::vector<int>& localMins,
+                     std::vector<int>& basins,
                      int x,
                      int y)
 {
     Point& point = input.heightmap[x][y];
     point.traversed = true;
+    int sumCount = 0;
 
     if (higher(input, point, x + 1, y) &&
         higher(input, point, x - 1, y) &&
         higher(input, point, x, y + 1) &&
         higher(input, point, x, y - 1))
     {
-        localMins.push_back(point.height + 1);
-        // we found a local minimum, traverse outwards from here and start counting numbers withing the basin
+        count(input, sumCount, x, y);
+        basins.push_back(sumCount);
     }
 
     if (traversable(input, x + 1, y))
     {
-        traversePartTwo(input, localMins, x + 1, y);
+        traversePartTwo(input, basins, x + 1, y);
     }
     if (traversable(input, x - 1, y))
     {
-        traversePartTwo(input, localMins, x - 1, y);
+        traversePartTwo(input, basins, x - 1, y);
     }
     if (traversable(input, x, y + 1))
     {
-        traversePartTwo(input, localMins, x, y + 1);
+        traversePartTwo(input, basins, x, y + 1);
     }
     if (traversable(input, x, y - 1))
     {
-        traversePartTwo(input, localMins, x, y - 1);
+        traversePartTwo(input, basins, x, y - 1);
     }
 }
 
