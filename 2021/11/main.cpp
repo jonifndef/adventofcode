@@ -205,58 +205,34 @@ bool withinBorders(const std::vector<std::vector<int>>& grid,
 }
 
 void incrementEnergy(std::vector<std::vector<int>>& grid,
-                     int& numFlashes,
-                     int x,
-                     int y)
+                     std::deque<std::pair<int,int>>& energyQueue,
+                     int& numFlashes)
 {
-    // we only allow incrementations of 0 in a new step! While we are in a step, stop incrementing if 0
-    
-    std::deque<std::pair<int, int>> energyQueue;
-    int& energyLevel = grid[x][y];
-
-    if (energyLevel > 9)
-    {
-        energyLevel = 0;  
-
-        energyQueue.push_back(std::pair<int, int>(x - 1, y - 1));
-        energyQueue.push_back(std::pair<int, int>(x, y - 1));
-        energyQueue.push_back(std::pair<int, int>(x + 1, y - 1));
-        energyQueue.push_back(std::pair<int, int>(x + 1, y));
-        energyQueue.push_back(std::pair<int, int>(x + 1, y + 1));
-        energyQueue.push_back(std::pair<int, int>(x, y + 1));
-        energyQueue.push_back(std::pair<int, int>(x - 1, y + 1));
-        energyQueue.push_back(std::pair<int, int>(x - 1, y));
-    }
-
     while (!energyQueue.empty())
     {
-        auto point = energyQueue.front();
+        int x = energyQueue.front().first;
+        int y = energyQueue.front().second;
+
         energyQueue.pop_front();
 
-        if (!withinBorders(grid, point.first, point.second))
+        int& energyLevel = grid[x][y];
+
+        if (!withinBorders(grid, x, y))
         {
             continue;
         }
 
-        int& energyLevel = grid[point.first][point.second];
-
         if (energyLevel != 0)
         {
-            energyLevel++;
-
-            if (energyLevel > 9)
+            if (energyLevel < 10)
+            {
+                energyLevel++;
+            }
+            if (energyLevel >= 10)
             {
                 numFlashes++;
                 energyLevel = 0;
-                //std::cout << "pos " << point.first << ", " << point.second << " flashed!" << std::endl;
-                //printGrid(grid);
 
-                //if ((y > 0 && y < 5) && (x > 3))
-                //{
-                //    printGrid(grid);
-                //}
-
-                // clockwise starting from top left
                 energyQueue.push_back(std::pair<int, int>(x - 1, y - 1));
                 energyQueue.push_back(std::pair<int, int>(x, y - 1));
                 energyQueue.push_back(std::pair<int, int>(x + 1, y - 1));
@@ -273,25 +249,37 @@ void incrementEnergy(std::vector<std::vector<int>>& grid,
 void runStep(std::vector<std::vector<int>>& grid,
              int& numFlashes)
 {
+    std::deque<std::pair<int, int>> energyQueue;
+
     for (int x = 0; x < (int)grid.size(); x++)
     {
         for (int y = 0; y < (int)grid[x].size(); y++)
         {
-            //incrementEnergy(grid, numFlashes, x, y);
             grid[x][y]++;
+
+            if (grid[x][y] > 9)
+            {
+                energyQueue.push_back(std::pair<int, int>(x, y));
+            }
         }
     }
 
-    std::cout << "just incremented every point in a new step!" << std::endl;
-    printGrid(grid);
+    incrementEnergy(grid, energyQueue, numFlashes);
+}
 
-    for (int x = 0; x < (int)grid.size(); x++)
+int getGridSum(const std::vector<std::vector<int>>& grid)
+{
+    int sum = 0;
+
+    for (const auto& cols : grid)
     {
-        for (int y = 0; y < (int)grid[x].size(); y++)
+        for (const auto& it : cols)
         {
-            incrementEnergy(grid, numFlashes, x, y);
+            sum += it;
         }
     }
+
+    return sum;
 }
 
 int getPartOneAnswer_1(const std::vector<Input>& inputs)
@@ -300,22 +288,30 @@ int getPartOneAnswer_1(const std::vector<Input>& inputs)
     int numFlashes = 0;
     (void)numFlashes;
 
-    int numSteps = 2;
+    int numSteps = 100;
     for (int i = 0; i < numSteps; i++)
     {
         runStep(grid, numFlashes);
     }
 
-    printGrid(grid);
-
-    return -1;
+    return numFlashes;
 }
 
 long getPartTwoAnswer_1(const std::vector<Input>& inputs)
 {
-    (void)inputs;
+    auto grid = inputs[0].grid;
+    int numFlashes = 0;
 
-    return -1;
+    int numSteps = 0;
+    int sum = -1;
+    while (sum != 0)
+    {
+        runStep(grid, numFlashes);
+        numSteps++;
+        sum = getGridSum(grid);
+    }
+
+    return numSteps;
 }
 
 void solve(std::vector<Input> inputs,
