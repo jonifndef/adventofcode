@@ -10,6 +10,14 @@
 
 #include <string.h>
 
+//bool allowIncrement = true;
+
+//struct Point
+//{
+//    int energyLevel = 0;
+//    ?/bool firstStep = 0;
+//};
+
 struct Input
 {
     std::vector<std::vector<int>> grid;
@@ -188,28 +196,100 @@ void printGrid(const std::vector<std::vector<int>>& grid)
     std::cout << std::endl;
 }
 
-void incrementEnergy(std::vector<std::vector<int>>& grid)
+bool withinBorders(const std::vector<std::vector<int>>& grid,
+                   int x,
+                   int y)
 {
-    for (auto& col : grid)
+    return ((x >= 0 && x < (int)grid.size()) &&
+            (y >= 0 && y < (int)grid[x].size()));
+}
+
+void incrementEnergy(std::vector<std::vector<int>>& grid,
+                     int& numFlashes,
+                     int x,
+                     int y)
+{
+    // we only allow incrementations of 0 in a new step! While we are in a step, stop incrementing if 0
+    
+    std::deque<std::pair<int, int>> energyQueue;
+    int& energyLevel = grid[x][y];
+
+    if (energyLevel > 9)
     {
-        for (auto& it : col)
+        energyLevel = 0;  
+
+        energyQueue.push_back(std::pair<int, int>(x - 1, y - 1));
+        energyQueue.push_back(std::pair<int, int>(x, y - 1));
+        energyQueue.push_back(std::pair<int, int>(x + 1, y - 1));
+        energyQueue.push_back(std::pair<int, int>(x + 1, y));
+        energyQueue.push_back(std::pair<int, int>(x + 1, y + 1));
+        energyQueue.push_back(std::pair<int, int>(x, y + 1));
+        energyQueue.push_back(std::pair<int, int>(x - 1, y + 1));
+        energyQueue.push_back(std::pair<int, int>(x - 1, y));
+    }
+
+    while (!energyQueue.empty())
+    {
+        auto point = energyQueue.front();
+        energyQueue.pop_front();
+
+        if (!withinBorders(grid, point.first, point.second))
         {
-            it++;
+            continue;
+        }
+
+        int& energyLevel = grid[point.first][point.second];
+
+        if (energyLevel != 0)
+        {
+            energyLevel++;
+
+            if (energyLevel > 9)
+            {
+                numFlashes++;
+                energyLevel = 0;
+                //std::cout << "pos " << point.first << ", " << point.second << " flashed!" << std::endl;
+                //printGrid(grid);
+
+                //if ((y > 0 && y < 5) && (x > 3))
+                //{
+                //    printGrid(grid);
+                //}
+
+                // clockwise starting from top left
+                energyQueue.push_back(std::pair<int, int>(x - 1, y - 1));
+                energyQueue.push_back(std::pair<int, int>(x, y - 1));
+                energyQueue.push_back(std::pair<int, int>(x + 1, y - 1));
+                energyQueue.push_back(std::pair<int, int>(x + 1, y));
+                energyQueue.push_back(std::pair<int, int>(x + 1, y + 1));
+                energyQueue.push_back(std::pair<int, int>(x, y + 1));
+                energyQueue.push_back(std::pair<int, int>(x - 1, y + 1));
+                energyQueue.push_back(std::pair<int, int>(x - 1, y));
+            }
         }
     }
 }
 
-void flash(std::vector<std::vector<int>>& grid)
+void runStep(std::vector<std::vector<int>>& grid,
+             int& numFlashes)
 {
-    for (auto& col : grid)
+    for (int x = 0; x < (int)grid.size(); x++)
     {
-        for (auto& it : col)
+        for (int y = 0; y < (int)grid[x].size(); y++)
         {
-            if (it > 9)
-            {
-                it = 0;
-                // increment energy at neighbours, maybe put into queue or something?
-            }
+            //incrementEnergy(grid, numFlashes, x, y);
+            grid[x][y]++;
+        }
+    }
+
+    std::cout << "just incremented every point in a new step!" << std::endl;
+    printGrid(grid);
+
+    for (int x = 0; x < (int)grid.size(); x++)
+    {
+        for (int y = 0; y < (int)grid[x].size(); y++)
+        {
+            incrementEnergy(grid, numFlashes, x, y);
         }
     }
 }
@@ -220,11 +300,10 @@ int getPartOneAnswer_1(const std::vector<Input>& inputs)
     int numFlashes = 0;
     (void)numFlashes;
 
-    int numSteps = 100;
-    for (int i = 0; i <= numSteps; i++)
+    int numSteps = 2;
+    for (int i = 0; i < numSteps; i++)
     {
-         incrementEnergy(grid);
-         flash(grid);
+        runStep(grid, numFlashes);
     }
 
     printGrid(grid);
