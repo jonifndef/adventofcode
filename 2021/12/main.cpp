@@ -140,12 +140,48 @@ std::vector<std::string> splitString(const std::string& inputString, const char*
     return subStrings;
 }
 
-Input formatInput(const std::vector<std::string>& subStrings)
+void formatInput(const std::vector<std::string>& subStrings,
+                 std::unordered_map<std::string, NodeData>& nodes)
 {
-    (void)subStrings;
-    Input input = {};
+    if (nodes.contains(subStrings[0]))
+    {
+        if (subStrings[1] != "start")
+        {
+            nodes[subStrings[0]].connections.push_back(subStrings[1]);
+        }
+    }
+    else
+    {
+        NodeData nodeData = {};
+        if (subStrings[1] != "start")
+        {
+            nodeData.connections.push_back(subStrings[1]);
+        }
 
-    return input;
+        nodes[subStrings[0]] = nodeData;
+    }
+
+    if (nodes.contains(subStrings[1]))
+    {
+        if (subStrings[0] != "start")
+        {
+            nodes[subStrings[1]].connections.push_back(subStrings[0]);
+        }
+    }
+    else
+    {
+        if (subStrings[1] != "end")
+        {
+            NodeData nodeData = {};
+
+            if (subStrings[0] != "start")
+            {
+                nodeData.connections.push_back(subStrings[0]);
+            }
+
+            nodes[subStrings[1]] = nodeData;
+        }
+    }
 }
 
 std::vector<Input> getInput(std::unordered_map<std::string, std::string> arguments)
@@ -168,16 +204,7 @@ std::vector<Input> getInput(std::unordered_map<std::string, std::string> argumen
                 return inputs;
             }
 
-            if (nodes.contains(subStrings[0]))
-            {
-                nodes[subStrings[0]].connections.push_back(subStrings[1]);
-            }
-            else
-            {
-                NodeData nodeData = {};
-                nodeData.connections.push_back(subStrings[1]);
-                nodes[subStrings[0]] = nodeData;
-            }
+            formatInput(subStrings, nodes);
         }
 
         inputFile.close();
@@ -193,6 +220,31 @@ int getPartOneAnswer_1(const std::vector<Input>& inputs)
 
     std::deque<std::pair<std::string, NodeData>> nodeQueue;
 
+    auto start = nodes.find("start")->second;
+
+    for (const auto& it : nodes)
+    {
+        std::cout << "key: " << it.first << ", connections: ";
+        for (const auto& conn : it.second.connections)
+        {
+            std::cout << conn << ", ";
+        }
+        std::cout << std::endl;
+    }
+
+    // check connections of start, then add each to the queue
+    // how to check if we've been on the lowercase node?
+    // and how to "remember" the path we've taken?
+    // some sort of backtracking? Is this possible with a queue?
+    // include a vector of nodes when inserting into the queue? std::pair<node, visitednodes>?
+    // we have a problem, the node "b" only has the connections "d" and "end", but it is also connedted to "A"
+    // how to know which nodes are at the same level as the current one, and not one step "up"?
+    // E.g. if we choose to include "A" in the node b's connections, what's stopping us from adding "start" or similar? How do we know if we are going "sideways" or "upwards"?
+    // We should be able to go "upwards" in all cases except when it's "start". So just add the key to the connections
+    for (const auto& con : start.connections)
+    {
+        nodeQueue.push_back()
+    }
 
 
 
