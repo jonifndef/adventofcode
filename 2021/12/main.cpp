@@ -241,10 +241,11 @@ int getPartOneAnswer_1(const std::vector<Input>& inputs)
     // how to know which nodes are at the same level as the current one, and not one step "up"?
     // E.g. if we choose to include "A" in the node b's connections, what's stopping us from adding "start" or similar? How do we know if we are going "sideways" or "upwards"?
     // We should be able to go "upwards" in all cases except when it's "start". So just add the key to the connections
-    for (const auto& con : start.connections)
-    {
-        nodeQueue.push_back()
-    }
+
+    //for (const auto& con : start.connections)
+    //{
+    //    nodeQueue.push_back()
+    //}
 
 
 
