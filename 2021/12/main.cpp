@@ -214,23 +214,30 @@ std::vector<Input> getInput(std::unordered_map<std::string, std::string> argumen
     return inputs;
 }
 
+bool isLowerCase(std::string str)
+{
+    // for char in std string
+    //  if !isLower(char)
+    //     return false 
+}
+
 int getPartOneAnswer_1(const std::vector<Input>& inputs)
 {
     const auto& nodes = inputs[0].nodes;
 
-    std::deque<std::pair<std::string, NodeData>> nodeQueue;
+    std::deque<std::string> nodeQueue;
 
-    auto start = nodes.find("start")->second;
+    auto startData = nodes.find("start")->second;
 
-    for (const auto& it : nodes)
-    {
-        std::cout << "key: " << it.first << ", connections: ";
-        for (const auto& conn : it.second.connections)
-        {
-            std::cout << conn << ", ";
-        }
-        std::cout << std::endl;
-    }
+    //for (const auto& it : nodes)
+    //{
+    //    std::cout << "key: " << it.first << ", connections: ";
+    //    for (const auto& conn : it.second.connections)
+    //    {
+    //        std::cout << conn << ", ";
+    //    }
+    //    std::cout << std::endl;
+    //}
 
     // check connections of start, then add each to the queue
     // how to check if we've been on the lowercase node?
@@ -242,10 +249,28 @@ int getPartOneAnswer_1(const std::vector<Input>& inputs)
     // E.g. if we choose to include "A" in the node b's connections, what's stopping us from adding "start" or similar? How do we know if we are going "sideways" or "upwards"?
     // We should be able to go "upwards" in all cases except when it's "start". So just add the key to the connections
 
-    //for (const auto& con : start.connections)
-    //{
-    //    nodeQueue.push_back()
-    //}
+    for (const auto& con : startData.connections)
+    {
+        nodeQueue.push_back(con);
+    }
+
+    while (!nodeQueue.empty())
+    {
+        auto nodeKey = nodeQueue.front();
+        nodeQueue.pop_front();
+
+        NodeData nodeData = nodes.find(nodeKey)->second;
+        
+        if (nodeData.explored)
+        {
+            continue;
+        }
+        
+        if (isLowerCase(nodeKey))
+        {
+            nodeData.explored = true;
+        }
+    }
 
 
 
@@ -282,6 +307,8 @@ int main(int argc, char* argv[])
         return 1;
     }
 
+    auto start = std::chrono::steady_clock::now();
+
     auto inputs = getInput(arguments);
 
     if (inputs.empty())
@@ -300,8 +327,8 @@ int main(int argc, char* argv[])
     //    std::cout << std::endl;
     //}
 
-    auto start = std::chrono::steady_clock::now();
     solve(inputs, arguments);
+
     auto end = std::chrono::steady_clock::now();
     std::chrono::duration<double> elapsed_seconds = end-start;
 
