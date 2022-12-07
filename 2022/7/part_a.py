@@ -23,9 +23,9 @@ class Node:
     def __init__(self, root_node):
         self.root_node = root_node
         self.node_list = []
-        self.tot_size = 0
+        self.file_dict = {}
     def __repr__(self):
-        return "root_node: {} node_list: {} tot_size: {}".format(self.root_node, self.node_list, self.tot_size)
+        return "root_node: {} node_list: {} file_dict: {}".format(self.root_node, self.node_list, self.file_dict)
     #_root_node = ""
 
 current_node = "/"
@@ -42,10 +42,13 @@ for line in lines:
         nodes[current_node].node_list.append(line[4])
     if line[0].isnumeric():
         # it is a filesize
-        pass
+        file_size = line.split()[0]
+        file_name = line.split()[1]
+        nodes[current_node].file_dict[file_name] = file_size
 
-print(nodes)
-#print(nodes["/"])
-#print(nodes["a"])
-#print(nodes["e"])
-#print(nodes["d"])
+#for node in nodes:
+#    print(node)
+print(nodes["/"])
+print(nodes["a"])
+print(nodes["e"])
+print(nodes["d"])
