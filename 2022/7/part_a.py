@@ -46,9 +46,4 @@ for line in lines:
         file_name = line.split()[1]
         nodes[current_node].file_dict[file_name] = file_size
 
-#for node in nodes:
-#    print(node)
-print(nodes["/"])
-print(nodes["a"])
-print(nodes["e"])
-print(nodes["d"])
+
