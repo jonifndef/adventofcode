@@ -1,4 +1,4 @@
-with open("input") as f:
+with open("test_input_2") as f:
     lines = [line.strip() for line in f.readlines()]
 
 nodes = {}
