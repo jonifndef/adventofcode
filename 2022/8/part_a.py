@@ -1,4 +1,4 @@
-with open("test_input") as f:
+with open("input") as f:
     lines = [line.strip() for line in f.readlines()]
 
 rows = len(lines)
@@ -48,3 +48,7 @@ for i in range(1, len(lines) - 1):
             is_visable(height, lines, i, j, "down")):
             print("tree with height {} and coords {},{} is visable!".format(lines[i][j], i, j))
             num_visable += 1
+
+num_border = 2 * len(lines) + (2 * len(lines[0]) - 4)
+
+print(num_border + num_visable)
