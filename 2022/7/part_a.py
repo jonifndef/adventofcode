@@ -1,5 +1,9 @@
+import random
+
 with open("test_input_2") as f:
     lines = [line.strip() for line in f.readlines()]
+
+# The problem is that there can be multiple dirs with the same name, at different depths of the file system tree
 
 nodes = {}
 
@@ -20,8 +24,10 @@ for line in lines:
         if next_dir == "..":
             current_node = nodes[current_node].root_node
         else:
-            if next_dir not in nodes.keys():
-                nodes[next_dir] = Node(current_node)
+            if next_dir in nodes.keys():
+                next_dir += str(random.random())
+            print("next_dir: {}".format(next_dir))
+            nodes[next_dir] = Node(current_node)
             current_node = next_dir
     if "dir" in line:
         nodes[current_node].node_list.append(line[4:])
