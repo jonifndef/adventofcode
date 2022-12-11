@@ -1,4 +1,4 @@
-with open("test_input") as f:
+with open("input") as f:
     lines = [x.strip() for x in f.readlines()]
 
 
@@ -8,7 +8,6 @@ def update_head_pos(head_pos, direction):
     elif direction == "U":
         head_pos[1] -= 1
     elif direction == "R":
-        print("hej")
         head_pos[0] += 1
     elif direction == "D":
         head_pos[1] += 1
@@ -18,22 +17,35 @@ def update_head_pos(head_pos, direction):
 
 def get_tail_new_pos(head_pos, tail_pos):
     if abs(head_pos[0] - tail_pos[0]) == 2:
-        print("eeyey")
         if head_pos[0] > tail_pos[0]:
             tail_pos[0] += 1
         else:
             tail_pos[0] -= 1
+        if head_pos[1] > tail_pos[1]:
+            tail_pos[1] += 1
+        elif head_pos[1] < tail_pos[1]:
+            tail_pos[1] -= 1
     elif abs(head_pos[1] - tail_pos[1]) == 2:
+        if head_pos[1] > tail_pos[1]:
+            tail_pos[1] += 1
+        else:
+            tail_pos[1] -= 1
         if head_pos[0] > tail_pos[0]:
             tail_pos[0] += 1
-        else:
+        elif head_pos[0] < tail_pos[0]:
             tail_pos[0] -= 1
     return tail_pos
+
+def is_in_list(element, mylist):
+    for x in mylist:
+        if x == element:
+            return True
+    return False
 
 
 head_pos = [0,0]
 tail_pos = [0,0]
-visited_postitions = []
+visited_positions = []
 
 for line in lines:
     direction = line.split()[0]
@@ -41,15 +53,9 @@ for line in lines:
 
     for _ in range(0, steps):
         head_pos = update_head_pos(head_pos, direction)
-        print(head_pos)
         tail_pos = get_tail_new_pos(head_pos, tail_pos)
-        print("tail_pos: {}".format(tail_pos))
 
-        # the problem seem to be that it cannot see into the lists within the list
-        # this check will always say that the element is already in the list, they are not unique enough I guess
-        if tail_pos not in visited_postitions:
-            visited_postitions.append(tail_pos)
-    break
+        if tail_pos not in visited_positions:
+            visited_positions.append(tail_pos.copy())
 
-
-print(len(visited_postitions))
+print(len(visited_positions))
