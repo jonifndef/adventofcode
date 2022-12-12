@@ -1,4 +1,4 @@
-with open("test_input") as f:
+with open("input") as f:
     lines = [x.strip() for x in f.readlines()]
 
 cycles = 0
@@ -8,26 +8,29 @@ cycle_dict = {}
 screen = []
 for _ in range(0,240):
     screen.append(".")
-#for _ in range(0, 4):
-#    row = []
-#    for _ in range(0, 40):
-#        row.append(".")
-#    screen.append(row)
 
 
 def draw_pixel():
-    # which pixel on screen to draw
     pixel = cycles % 241
-    # what to draw? pos of sprite in this instace
+    to_draw = "."
+    sprite_pos = pixel % 40
+
+    if (sprite_pos >= x_register - 1 and (sprite_pos <= x_register + 1) % 40):
+        to_draw = "#"
+
+    screen[pixel] = to_draw
 
 
 for line in lines:
     if "noop" in line:
+        draw_pixel()
         cycles += 1
         cycle_dict[cycles] = x_register
     elif "addx" in line:
+        draw_pixel()
         cycles += 1
         cycle_dict[cycles] = x_register
+        draw_pixel()
         cycles += 1
         cycle_dict[cycles] = x_register
         x_register += int(line.split()[1])
