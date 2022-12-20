@@ -26,7 +26,7 @@ def is_in_grid(grid, i, j):
 def get_start_point(grid):
     for i in range(0, len(grid)):
         for j in range(0, len(grid[i])):
-            if grid[i][j].height == "S":
+            if grid[i][j].height == "E":
                 return (i,j)
 
 def get_neighbours(i, j):
@@ -40,7 +40,7 @@ def get_neighbours(i, j):
 
 def is_valid(grid, new_y, new_x, old_y, old_x):
     if is_in_grid(grid, new_y, new_x):
-        if (grid[new_y][new_x].height_num - grid[old_y][old_x].height_num) < 2:
+        if (grid[old_y][old_x].height_num - grid[new_y][new_x].height_num) < 2:
             return True
     return False
 
@@ -74,7 +74,7 @@ while len(queue) > 0:
 
     grid[i][j].visited = True
 
-    if grid[i][j].height == "E":
+    if grid[i][j].height == "a":
         final_path = grid[i][j].path
         break
     else:
