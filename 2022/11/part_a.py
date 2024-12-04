@@ -25,3 +25,8 @@ for i in iterator:
 
 
 print(monkeys)
+
+monkeys = []
+
+with open("test_input") as f:
+    for line.strip() in f.readlines():
