@@ -50,3 +50,8 @@ print(monkeys)
 for monkey in monkeys:
     print(monkey.items)
     print(monkey.operation(2))
+
+monkeys = []
+
+#with open("test_input") as f:
+#    for line.strip() in f.readlines():

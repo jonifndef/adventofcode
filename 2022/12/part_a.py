@@ -1,6 +1,6 @@
 from collections import deque
 
-with open("input") as f:
+with open("test_input_4") as f:
     lines = [x.strip() for x in f.readlines()]
 
 path = []
@@ -40,6 +40,9 @@ def get_neighbours(i, j):
 
 def is_valid(grid, new_y, new_x, old_y, old_x):
     if is_in_grid(grid, new_y, new_x):
+        #print("{},{} is in grid".format(new_y, new_x))
+        #if ((grid[new_y][new_x].height_num - grid[old_y][old_x].height_num) < 2 or
+        #    grid[new_y][new_x].height == "E"):
         if (grid[new_y][new_x].height_num - grid[old_y][old_x].height_num) < 2:
             return True
     return False
@@ -55,6 +58,8 @@ for line in lines:
             height_num = 26
         else:
             height_num = ord(height) - ord("a") + 1
+            #if (height_num > 24):
+            #    print(height_num)
 
         row.append(Point(height, height_num))
     grid.append(row)
@@ -73,15 +78,28 @@ while len(queue) > 0:
         continue
 
     grid[i][j].visited = True
+    print("visiting point {} at {},{}".format(grid[i][j].height, i, j))
 
     if grid[i][j].height == "E":
+        print("found it!")
+        #print(grid[i][j].path)
         final_path = grid[i][j].path
+        #print(grid[i][j].path)
         break
     else:
         for new_y,new_x in get_neighbours(i, j):
             if is_valid(grid, new_y, new_x, i, j):
+                #print("{},{} with height {} being extended with: {}, and appended with {}".format(new_y,new_x,grid[new_y][new_x].height,grid[i][j].path,grid[i][j].height))
+                #grid[new_y][new_x].path.extend(grid[i][j].path)
                 grid[new_y][new_x].path = grid[i][j].path.copy()
                 grid[new_y][new_x].path.append(grid[i][j].height)
                 queue.append((new_y,new_x))
 
 print(len(final_path))
+#print(final_path)
+#final_path.reverse()
+#for i, point in enumerate(final_path):
+#    if point == "S":
+#        print(final_path[i:])
+#        print(len(final_path[i:]))
+#        break
